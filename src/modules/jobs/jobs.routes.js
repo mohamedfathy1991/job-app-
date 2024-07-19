@@ -4,7 +4,6 @@ import { verifyToken } from "../../midleware/tokenOperation.js";
 import { errhandle } from "../../midleware/catcherr.js";
 import { addJobVal, companyidVal, deletejobval, filterjobsVal, jobUpdateVal } from "./jobs.validation.js";
 import { addJob, deleteJob, getAllJobsForSpecificCompany, getJobWithCompany, updateJob } from "./jobs.controler.js";
-import upload from "../../midleware/multer.js";
 
 
 const JobRoute= Router()

@@ -1,10 +1,12 @@
 import { Apllication } from "../../../database/model/application.model.js"
 
+// const ExcelJS = require('exceljs');
+
+
 
 
 export const jobApply =async(req,res,next)=>{
       req.body.userid= req.user.id
-  console.log(req.file);
       
       req.body.userResume= req.file.filename
       const job = await  Apllication.create(req.body)
@@ -13,3 +15,5 @@ export const jobApply =async(req,res,next)=>{
           
     
     }
+
+    // collects the applications for a specific company  

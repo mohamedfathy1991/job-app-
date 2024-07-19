@@ -12,6 +12,7 @@ import applicationRoute from './src/modules/aplication/application.routes.js'
 configDotenv()
 const app = express()
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads",(express.static('uploads')))
 
@@ -25,6 +26,7 @@ app.use('/user',userRoute)
 app.use('/company',companyRoute)
 app.use('/job',JobRoute)
 app.use('/apllyjob',applicationRoute)
+
 
 
 app.use("*",(req,res,next)=>{

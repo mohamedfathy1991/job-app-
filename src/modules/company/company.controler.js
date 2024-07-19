@@ -1,7 +1,12 @@
+
+import path, { dirname } from "path"
+import exceljs from 'exceljs'
 import { Apllication } from "../../../database/model/application.model.js"
 import { Company } from "../../../database/model/company.model.js"
 import { Job } from "../../../database/model/jobs.model.js"
 import { AppErr } from "../../midleware/catcherr.js"
+import { log } from "console"
+import { fileURLToPath } from "url"
 
 
 export const addCompanydata = async(req,res,next)=>{
@@ -81,12 +86,63 @@ export const getAllAplicationForJob= async(req,res,next)=>{
      let applications= await Apllication.find({jobid:id}).populate('userid')
      if(!applications.length) return next( new AppErr(' applications not found ',404))
 
-    const  baseurl= process.env.BASEURL
-     applications.forEach(element => {
-      element.userResume= baseurl + element.userResume
-
-      
-     });
+  
      res.status(200).json({message:"success",applications})
+
+}
+
+export const collectApplicationEcell=async(req,res,next)=>{
+      const  {id}= req.params
+     const {dates} = req.body
+      let jobs = await Job.find({company:id})
+
+      if(!jobs) return next( new AppErr(' company not found ',404))
+
+      // const applications = await Apllication.find({
+      //       jobid: company.companyHR,
+      //       // createdAt: {
+      //       //   $gte: new Date(dates).setHours(0, 0, 0, 0),
+      //       //   $lte: new Date(dates).setHours(23, 59, 59, 999)
+      //       // }
+      //     }).populate({
+      //       path:"jobid",populate:{
+      //             path:"company",
+      //             model:"Company"
+      //       }
+      //     })
+      
+          if (jobs.length === 0) {
+            return res.status(404).json({ message: 'No applications found for the specified company and date' });
+          }
+    const workbook = new exceljs.Workbook();
+    const worksheet = workbook.addWorksheet('Applications');
+    worksheet.columns = [
+      { header: 'Company Name', key: 'companyName', width: 30 },
+      { header: 'Applicant Name', key: 'applicantName', width: 30 },
+      { header: 'Application Date', key: 'applicationDate', width: 20 },
+      { header: 'Application path', key: 'applicationpath', width: 50 }
+      // Add other columns as needed
+    ];
+const jobIds = jobs.map(job => job._id);
+const applications = await Apllication.find({ jobid: { $in: jobIds } }).populate({
+      path: "jobid", populate: {
+            path: "company",
+            model: "Company"
+      }
+})
+    applications.forEach(applications => {
+      worksheet.addRow({
+        companyName: applications.company?.companyName,
+        applicantName: applications.jobid.jobTitle,
+        applicationDate: "112/102",
+        applicationpath: applications?.userResume
+      });
+    });
+    const __filename = fileURLToPath(import.meta.url);
+     const __dirname = dirname(__filename);
+
+    const filePath = path.join(__dirname, '../../../uploads','applications.xlsx');
+    await workbook.xlsx.writeFile(filePath)
+    res.json('file added')
 
 }
